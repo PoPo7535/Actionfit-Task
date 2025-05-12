@@ -39,7 +39,6 @@ public partial class BoardController
                     if (horizon) horizonBoardBlocks.Add(boardBlockObj);
                     else verticalBoardBlocks.Add(boardBlockObj);
                 }
-                //checkCoordinates.Add(new Vector2(boardBlockObj.x, boardBlockObj.y));
             }
         }
 

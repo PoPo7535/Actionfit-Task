@@ -1,3 +1,6 @@
+using System.Numerics;
+using UnityEngine;
+
 namespace Project.Scripts.Data_Script
 {
     [System.Serializable]

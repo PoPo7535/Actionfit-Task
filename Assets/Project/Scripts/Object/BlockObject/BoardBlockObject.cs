@@ -5,7 +5,7 @@ using Vector3 = UnityEngine.Vector3;
 
 public class BoardBlockObject : MonoBehaviour
 {
-    public BoardController _ctrl;
+    public BoardController _ctrl => BoardController.Instance;
     public BlockObject playingBlock;
     public bool isCheckBlock;
     public List<int> checkGroupIdx;
@@ -20,7 +20,17 @@ public class BoardBlockObject : MonoBehaviour
     
     public ColorType verticalColorType => 
         isHorizon.IndexOf(false) != -1 ? colorType[isHorizon.IndexOf(true)] : ColorType.None;
-    
+
+    public void Init(BlockBaseData data)
+    {
+        transform.localPosition = new Vector3(
+            data.x * _ctrl.blockDistance,
+            0,
+            data.y * _ctrl.blockDistance
+        );
+        x = data.x;
+        y = data.y;
+    }
     public bool CheckAdjacentBlock(BlockObject block, Vector3 destroyStartPos)
     {
         if (!isCheckBlock) return false;

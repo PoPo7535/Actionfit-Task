@@ -52,7 +52,6 @@ public partial class BoardController
             foreach (var coordinate in horizonBoardBlocks)
             {
                 if (coordinate.x < minX) minX = (int)coordinate.x;
-
                 if (coordinate.x > maxX) maxX = (int)coordinate.x;
             }
 
@@ -74,7 +73,7 @@ public partial class BoardController
                     {
                         var currentBlock = block.dragHandler.blocks[k];
 
-                        if (currentBlock.y == horizonBoardBlocks[i].y)
+                        if (Mathf.Approximately(currentBlock.y, horizonBoardBlocks[i].y))
                         {
                             if (currentBlock.y > maxY)
                             {
@@ -109,7 +108,7 @@ public partial class BoardController
                     {
                         var currentBlock = block.dragHandler.blocks[k];
 
-                        if (currentBlock.y == horizonBoardBlocks[i].y)
+                        if (Mathf.Approximately(currentBlock.y, horizonBoardBlocks[i].y))
                         {
                             if (currentBlock.y < minY)
                             {

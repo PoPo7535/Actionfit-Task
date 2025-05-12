@@ -232,24 +232,22 @@ public partial class BoardController
             // 길이에 따른 위치 조정 (수평/수직 벽만 조정)
             if (wallData.length > 1)
             {
-                // 수평 벽의 중앙 위치 조정 (Up, Down 방향)
-                if (wallData.WallDirection == ObjectPropertiesEnum.WallDirection.Single_Up || 
-                    wallData.WallDirection == ObjectPropertiesEnum.WallDirection.Single_Down ||
-                    wallData.WallDirection == ObjectPropertiesEnum.WallDirection.Open_Up || 
-                    wallData.WallDirection == ObjectPropertiesEnum.WallDirection.Open_Down)
-                {
-                    // x축으로 중앙으로 이동
+                bool isUpDown = wallData.WallDirection is 
+                    ObjectPropertiesEnum.WallDirection.Single_Up or
+                    ObjectPropertiesEnum.WallDirection.Single_Down or
+                    ObjectPropertiesEnum.WallDirection.Open_Up or
+                    ObjectPropertiesEnum.WallDirection.Open_Down;
+
+                bool isLeftRight = wallData.WallDirection is 
+                    ObjectPropertiesEnum.WallDirection.Single_Left or
+                    ObjectPropertiesEnum.WallDirection.Single_Right or
+                    ObjectPropertiesEnum.WallDirection.Open_Left or
+                    ObjectPropertiesEnum.WallDirection.Open_Right;
+
+                if (isUpDown) // 수평 벽의 중앙 위치 조정 (Up, Down 방향)
                     position.x += (wallData.length - 1) * blockDistance * 0.5f;
-                }
-                // 수직 벽의 중앙 위치 조정 (Left, Right 방향)
-                else if (wallData.WallDirection == ObjectPropertiesEnum.WallDirection.Single_Left || 
-                         wallData.WallDirection == ObjectPropertiesEnum.WallDirection.Single_Right ||
-                         wallData.WallDirection == ObjectPropertiesEnum.WallDirection.Open_Left || 
-                         wallData.WallDirection == ObjectPropertiesEnum.WallDirection.Open_Right)
-                {
-                    // z축으로 중앙으로 이동
+                else if (isLeftRight) // 수직 벽의 중앙 위치 조정 (Left, Right 방향)
                     position.z += (wallData.length - 1) * blockDistance * 0.5f;
-                }
             }
 
             // 벽 오브젝트 생성, isOriginal = false

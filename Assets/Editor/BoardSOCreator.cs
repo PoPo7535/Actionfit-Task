@@ -51,7 +51,7 @@ public class BoardSOCreator : EditorWindow
         }
 
         // 생성 버튼 (JSON 파일이 있을 때만 활성화)
-        GUI.enabled = jsonFile != null;
+        GUI.enabled = jsonFile is not null;
         if (GUILayout.Button("Generate Stage Data"))
         {
             CreateStageDataFromJson();

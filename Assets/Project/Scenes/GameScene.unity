@@ -655,12 +655,12 @@ MonoBehaviour:
   - {fileID: 2100000, guid: 3911ad6b37d8e4f01ac79f81fe095ca5, type: 2}
   - {fileID: 2100000, guid: 16ba0ebe467b6440a9dfb0b23ad0da42, type: 2}
   wallPrefabs:
-  - {fileID: 229845866602596133, guid: 9fdcf3056cbfd4c50872aff27fecc5ef, type: 3}
-  - {fileID: 735630083384091489, guid: 661e448fefef74bcc851eb44b30f9e34, type: 3}
-  - {fileID: 5142292172560998811, guid: 70d160915161f41c987d5a5a96a994dc, type: 3}
-  - {fileID: 1572862852100298902, guid: 7c827d0bfcbee4eda9200dcecb7c395f, type: 3}
-  - {fileID: 9211508888067625810, guid: 4152bee713a374547afee7f13f6e5277, type: 3}
-  - {fileID: 3433197184454345110, guid: a5f422c383a7148dfaa2b19306485743, type: 3}
+  - {fileID: 1445186055917481192, guid: 9fdcf3056cbfd4c50872aff27fecc5ef, type: 3}
+  - {fileID: 3283983632915070324, guid: 661e448fefef74bcc851eb44b30f9e34, type: 3}
+  - {fileID: 1511858311901678477, guid: 70d160915161f41c987d5a5a96a994dc, type: 3}
+  - {fileID: 3656575219441208273, guid: 7c827d0bfcbee4eda9200dcecb7c395f, type: 3}
+  - {fileID: 8378893555183122862, guid: 4152bee713a374547afee7f13f6e5277, type: 3}
+  - {fileID: -5899132390396461250, guid: a5f422c383a7148dfaa2b19306485743, type: 3}
   wallMaterials:
   - {fileID: 2100000, guid: fa32569ee2344478ba53aef3981402dd, type: 2}
   - {fileID: 2100000, guid: 91a2fbf06960544d08ba27a654cb20e8, type: 2}
@@ -675,6 +675,7 @@ MonoBehaviour:
   quadTr: {fileID: 1553632835}
   destroyParticle: {fileID: 8198912971446300596, guid: ec90d8fe09a08634eb07d7df50754492,
     type: 3}
+  psr: []
   particleSpawners: []
   walls: []
   boardWidth: 0

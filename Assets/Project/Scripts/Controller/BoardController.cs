@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public partial class BoardController : MonoBehaviour
 {
@@ -23,6 +24,7 @@ public partial class BoardController : MonoBehaviour
     [SerializeField] ParticleSystem destroyParticle;
 
     public ParticleSystem destroyParticlePrefab => destroyParticle;
+    public ParticleSystemRenderer[] psr;
     public List<SequentialCubeParticleSpawner> particleSpawners;
     public List<GameObject> walls = new();
 
@@ -44,6 +46,7 @@ public partial class BoardController : MonoBehaviour
     {
         Instance = this;
         Application.targetFrameRate = 60;
+        psr = destroyParticlePrefab.GetComponentsInChildren<ParticleSystemRenderer>();
     }
 
     private void Start()

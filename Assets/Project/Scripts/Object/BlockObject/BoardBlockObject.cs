@@ -1,5 +1,6 @@
 
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Vector3 = UnityEngine.Vector3;
 
@@ -33,101 +34,98 @@ public class BoardBlockObject : MonoBehaviour
     }
     public bool CheckAdjacentBlock(BlockObject block, Vector3 destroyStartPos)
     {
-        if (!isCheckBlock) return false;
-        if (!block.dragHandler.enabled) return false;
+        if (false == isCheckBlock || false == block.dragHandler.enabled) 
+            return false;
+        
         for (int i = 0; i < colorType.Count; i++)
         {
-            if (block.colorType == colorType[i])
+            if (block.colorType != colorType[i])
+                continue;
+            
+            if (false == _ctrl.CheckCanDestroy(this, block)) 
+                return false;
+            
+            int length = 0;
+            if (isHorizon[i])
             {
-                int length = 0;
-                if (isHorizon[i])
-                {
-                    if (block.dragHandler.horizon > len[i]) return false;
-                    if (!_ctrl.CheckCanDestroy(this, block)) return false;
-                    length = block.dragHandler.vertical;
-                }
-                else
-                {
-                    if (block.dragHandler.vertical > len[i]) return false;
-                    if (!_ctrl.CheckCanDestroy(this, block)) return false;
-                    length = block.dragHandler.horizon;
-                }
+                if (block.dragHandler.horizon > len[i]) return false;
+                length = block.dragHandler.vertical;
+            }
+            else
+            {
+                if (block.dragHandler.vertical > len[i]) return false;
+                length = block.dragHandler.horizon;
+            }
 
-                /*block.dragHandler.transform.position =
+            /*block.dragHandler.transform.position =
                     new Vector3(x - block.offsetToCenter.x,
                                 block.dragHandler.transform.position.y,
                                 y - block.offsetToCenter.y) * 0.79f;*/
 
-                block.dragHandler.transform.position = destroyStartPos;
-                block.dragHandler.ReleaseInput();
+            block.dragHandler.transform.position = destroyStartPos;
+            block.dragHandler.ReleaseInput();
 
-                foreach (var blockObject in block.dragHandler.blocks)
-                {
-                    blockObject.ColliderOff();
-                }
+            foreach (var blockObject in block.dragHandler.blocks)
+                blockObject.ColliderOff();
 
-                block.dragHandler.enabled = false;
+            block.dragHandler.enabled = false;
 
-                bool isRight = isHorizon[i] ? y < _ctrl.boardHeight / 2 : x < _ctrl.boardWidth / 2;
-                if (!isRight) length *= -1;
-                Vector3 pos = isHorizon[i]
-                    ? new Vector3(block.dragHandler.transform.position.x, block.dragHandler.transform.position.y,
-                        block.dragHandler.transform.position.z - length * 0.79f)
-                    : new Vector3(block.dragHandler.transform.position.x - length * 0.79f,
-                        block.dragHandler.transform.position.y, block.dragHandler.transform.position.z);
+            bool isRight = isHorizon[i] ? y < _ctrl.boardHeight / 2 : x < _ctrl.boardWidth / 2;
+            if (false == isRight)
+                length *= -1;
+            Vector3 pos = isHorizon[i]
+                ? new Vector3(block.dragHandler.transform.position.x, block.dragHandler.transform.position.y,
+                    block.dragHandler.transform.position.z - length * 0.79f)
+                : new Vector3(block.dragHandler.transform.position.x - length * 0.79f,
+                    block.dragHandler.transform.position.y, block.dragHandler.transform.position.z);
 
 
-                Vector3 centerPos =
-                    isHorizon[i]
-                        ? block.dragHandler.GetCenterX()
-                        : block.dragHandler.GetCenterZ(); //_ctrl.CenterOfBoardBlockGroup(len, isHorizon, this);
-                LaunchDirection direction = GetLaunchDirection(x, y, isHorizon[i]);
-                Quaternion rotation = Quaternion.identity;
+            Vector3 centerPos =
+                isHorizon[i]
+                    ? block.dragHandler.GetCenterX()
+                    : block.dragHandler.GetCenterZ(); //_ctrl.CenterOfBoardBlockGroup(len, isHorizon, this);
+            LaunchDirection direction = GetLaunchDirection(x, y, isHorizon[i]);
+            Quaternion rotation = Quaternion.identity;
 
-                centerPos.y = 0.55f;
-                switch (direction)
-                {
-                    case LaunchDirection.Up:
-                        centerPos += Vector3.forward * 0.65f;
-                        centerPos.z = transform.position.z;
-                        centerPos.z += 0.55f;
-                        rotation = Quaternion.Euler(0, 180, 0);
-                        break;
-                    case LaunchDirection.Down:
-                        centerPos += Vector3.back * 0.65f;
-                        break;
-                    case LaunchDirection.Left:
-                        centerPos += Vector3.left * 0.55f;
-                        //offset.z = centerPos.transform.position.z;
-                        rotation = Quaternion.Euler(0, 90, 0);
-                        break;
-                    case LaunchDirection.Right:
-                        centerPos += Vector3.right * 0.55f;
-                        centerPos.x = transform.position.x;
-                        centerPos.x += 0.65f;
-                        rotation = Quaternion.Euler(0, -90, 0);
-                        //offset.z = centerPos.transform.position.z;
-                        break;
-                }
-
-                int blockLength = isHorizon[i] ? block.dragHandler.horizon : block.dragHandler.vertical;
-                ParticleSystem[] pss = BoardController.Instance.destroyParticlePrefab
-                    .GetComponentsInChildren<ParticleSystem>();
-                foreach (var ps in pss)
-                {
-                    ParticleSystemRenderer psrs = ps.GetComponent<ParticleSystemRenderer>();
-                    psrs.material = BoardController.Instance.GetTargetMaterial((int)block.colorType);
-                }
-
-                //TODO : Move to Other Class & Adjust Direction / Position
-
-                ParticleSystem particle = Instantiate(BoardController.Instance.destroyParticlePrefab,
-                    transform.position, rotation);
-                particle.transform.position = centerPos;
-                particle.transform.localScale = new Vector3(blockLength * 0.4f, 0.5f, blockLength * 0.4f);
-
-                block.dragHandler.DestroyMove(pos, particle);
+            centerPos.y = 0.55f;
+            switch (direction)
+            {
+                case LaunchDirection.Up:
+                    centerPos += Vector3.forward * 0.65f;
+                    centerPos.z = transform.position.z;
+                    centerPos.z += 0.55f;
+                    rotation = Quaternion.Euler(0, 180, 0);
+                    break;
+                case LaunchDirection.Down:
+                    centerPos += Vector3.back * 0.65f;
+                    break;
+                case LaunchDirection.Left:
+                    centerPos += Vector3.left * 0.55f;
+                    //offset.z = centerPos.transform.position.z;
+                    rotation = Quaternion.Euler(0, 90, 0);
+                    break;
+                case LaunchDirection.Right:
+                    centerPos += Vector3.right * 0.55f;
+                    centerPos.x = transform.position.x;
+                    centerPos.x += 0.65f;
+                    rotation = Quaternion.Euler(0, -90, 0);
+                    //offset.z = centerPos.transform.position.z;
+                    break;
             }
+
+            int blockLength = isHorizon[i] ? block.dragHandler.horizon : block.dragHandler.vertical;
+
+            foreach (var psr in BoardController.Instance.psr)
+                psr.material = BoardController.Instance.GetTargetMaterial((int)block.colorType);
+
+            //TODO : Move to Other Class & Adjust Direction / Position
+
+            ParticleSystem particle = Instantiate(BoardController.Instance.destroyParticlePrefab,
+                transform.position, rotation);
+            particle.transform.position = centerPos;
+            particle.transform.localScale = new Vector3(blockLength * 0.4f, 0.5f, blockLength * 0.4f);
+
+            block.dragHandler.DestroyMove(pos, particle);
         }
 
         return true;

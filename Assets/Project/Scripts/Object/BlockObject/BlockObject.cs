@@ -3,6 +3,7 @@ using UnityEngine;
 public class BlockObject : MonoBehaviour
 {
     public BlockDragHandler dragHandler;
+    public new SkinnedMeshRenderer renderer;
     public ColorType colorType;
     public float x;
     public float y;
@@ -18,6 +19,14 @@ public class BlockObject : MonoBehaviour
         Col = GetComponentInChildren<Collider>();
     }
 
+    public void Init(PlayingBlockData pbData, ShapeData shape, BoardBlockObject boardBlockObject)
+    {
+        colorType = pbData.colorType;
+        x = pbData.center.x + shape.offset.x;
+        y = pbData.center.y + shape.offset.y;
+        offsetToCenter = new Vector2(shape.offset.x, shape.offset.y);
+        preBoardBlockObject = boardBlockObject;
+    }
     public void SetCoordinate(Vector2 centerPos)
     {
         /*float offsetX = (transform.position.x > previousPosition.x) ? 0.05f : -0.05f;

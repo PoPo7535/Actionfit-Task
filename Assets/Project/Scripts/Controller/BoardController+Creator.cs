@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public partial class BoardController
@@ -47,29 +48,20 @@ public partial class BoardController
             BoardBlockObject boardBlockObject = kv.Value;
             for (int i = 0; i < boardBlockObject.colorType.Count; i++)
             {
-                if (kv.Key.Item2) // 가로 방향
+                var isHorizon = kv.Key.Item2;
+                var start = isHorizon 
+                    ? boardBlockObject.x 
+                    : boardBlockObject.y;
+                
+                for (var d = start + 1; d < start + boardBlockObject.len[i]; ++d)
                 {
-                    for (int j = boardBlockObject.x + 1; j < boardBlockObject.x + boardBlockObject.len[i]; j++)
-                    {
-                        if (false == boardBlockDic.TryGetValue((j, boardBlockObject.y), out BoardBlockObject targetBlock))
-                            continue;
-                        targetBlock.colorType.Add(boardBlockObject.colorType[i]);
-                        targetBlock.len.Add(boardBlockObject.len[i]);
-                        targetBlock.isHorizon.Add(kv.Key.Item2);
-                        targetBlock.isCheckBlock = true;
-                    }
-                }
-                else // 세로 방향
-                {
-                    for (int k = boardBlockObject.y + 1; k < boardBlockObject.y + boardBlockObject.len[i]; k++)
-                    {
-                        if (false == boardBlockDic.TryGetValue((boardBlockObject.x, k), out BoardBlockObject targetBlock))
-                            continue;
-                        targetBlock.colorType.Add(boardBlockObject.colorType[i]);
-                        targetBlock.len.Add(boardBlockObject.len[i]);
-                        targetBlock.isHorizon.Add(kv.Key.Item2);
-                        targetBlock.isCheckBlock = true;
-                    }
+                    (int, int) key = isHorizon ? (d, boardBlockObject.y) : (boardBlockObject.x, d);
+                    if (false == boardBlockDic.TryGetValue(key, out BoardBlockObject targetBlock))
+                        continue;
+                    targetBlock.colorType.Add(boardBlockObject.colorType[i]);
+                    targetBlock.len.Add(boardBlockObject.len[i]);
+                    targetBlock.isHorizon.Add(isHorizon);
+                    targetBlock.isCheckBlock = true;
                 }
             }
         }
@@ -84,54 +76,32 @@ public partial class BoardController
             
             for (int j = 0; j < boardBlock.colorType.Count; j++)
             {
-                if (boardBlock.isCheckBlock && boardBlock.colorType[j] != ColorType.None)
+                if (false == (boardBlock.isCheckBlock && boardBlock.colorType[j] != ColorType.None))
+                    return;
+                
+                // 이 블록이 이미 그룹에 속해있는지 확인
+                if (false == boardBlock.checkGroupIdx.Count <= j)
+                    return;
+                
+                (int x, int y) pos = boardBlock.isHorizon[j]
+                    ? (boardBlock.x - 1, boardBlock.y)
+                    : (boardBlock.x, boardBlock.y - 1);
+                
+                if (boardBlockDic.TryGetValue(pos, out BoardBlockObject block) &&
+                    j < block.colorType.Count &&
+                    block.colorType[j] == boardBlock.colorType[j] &&
+                    block.checkGroupIdx.Count > j)
                 {
-                    // 이 블록이 이미 그룹에 속해있는지 확인
-                    if (boardBlock.checkGroupIdx.Count <= j)
-                    {
-                        if (boardBlock.isHorizon[j])
-                        {
-                            // 왼쪽 블록 확인
-                            (int x, int y) leftPos = (boardBlock.x - 1, boardBlock.y);
-                            if (boardBlockDic.TryGetValue(leftPos, out BoardBlockObject leftBlock) &&
-                                j < leftBlock.colorType.Count &&
-                                leftBlock.colorType[j] == boardBlock.colorType[j] &&
-                                leftBlock.checkGroupIdx.Count > j)
-                            {
-                                int grpIdx = leftBlock.checkGroupIdx[j];
-                                CheckBlockGroupDic[grpIdx].Add(boardBlock);
-                                boardBlock.checkGroupIdx.Add(grpIdx);
-                            }
-                            else
-                            {
-                                checkBlockIndex++;
-                                CheckBlockGroupDic.Add(checkBlockIndex, new List<BoardBlockObject>());
-                                CheckBlockGroupDic[checkBlockIndex].Add(boardBlock);
-                                boardBlock.checkGroupIdx.Add(checkBlockIndex);
-                            }
-                        }
-                        else
-                        {
-                            // 위쪽 블록 확인
-                            (int x, int y) upPos = (boardBlock.x, boardBlock.y - 1);
-                            if (boardBlockDic.TryGetValue(upPos, out BoardBlockObject upBlock) &&
-                                j < upBlock.colorType.Count &&
-                                upBlock.colorType[j] == boardBlock.colorType[j] &&
-                                upBlock.checkGroupIdx.Count > j)
-                            {
-                                int grpIdx = upBlock.checkGroupIdx[j];
-                                CheckBlockGroupDic[grpIdx].Add(boardBlock);
-                                boardBlock.checkGroupIdx.Add(grpIdx);
-                            }
-                            else
-                            {
-                                checkBlockIndex++;
-                                CheckBlockGroupDic.Add(checkBlockIndex, new List<BoardBlockObject>());
-                                CheckBlockGroupDic[checkBlockIndex].Add(boardBlock);
-                                boardBlock.checkGroupIdx.Add(checkBlockIndex);
-                            }
-                        }
-                    }
+                    int grpIdx = block.checkGroupIdx[j];
+                    CheckBlockGroupDic[grpIdx].Add(boardBlock);
+                    boardBlock.checkGroupIdx.Add(grpIdx);
+                }
+                else
+                {
+                    checkBlockIndex++;
+                    CheckBlockGroupDic.Add(checkBlockIndex, new List<BoardBlockObject>());
+                    CheckBlockGroupDic[checkBlockIndex].Add(boardBlock);
+                    boardBlock.checkGroupIdx.Add(checkBlockIndex);
                 }
             }
         }
@@ -143,18 +113,15 @@ public partial class BoardController
     private async Task CreatePlayingBlocksAsync(int stageIdx = 0) 
     {
         playingBlockParent = new GameObject("PlayingBlockParent");
-        for (int i = 0; i < stageDatas[stageIdx].playingBlocks.Count; i++)
+        foreach (var pbData in stageDatas[stageIdx].playingBlocks)
         {
-            var pbData = stageDatas[stageIdx].playingBlocks[i];
-
-            GameObject blockGroupObject = Instantiate(blockGroupPrefab, playingBlockParent.transform);
-            blockGroupObject.transform.position = new Vector3(
+            BlockDragHandler dragHandler = Instantiate(blockGroupPrefab, playingBlockParent.transform);
+            dragHandler.transform.position = new Vector3(
                 pbData.center.x * blockDistance, 
                 0.33f, 
                 pbData.center.y * blockDistance
             );
 
-            BlockDragHandler dragHandler = blockGroupObject.GetComponent<BlockDragHandler>();
             if (dragHandler != null) dragHandler.blocks = new List<BlockObject>();
 
             dragHandler.uniqueIndex = pbData.uniqueIndex;
@@ -172,9 +139,9 @@ public partial class BoardController
             int minY = boardHeight;
             foreach (var shape in pbData.shapes)
             {
-                GameObject singleBlock = Instantiate(blockPrefab, blockGroupObject.transform);
+                BlockObject blockObj = Instantiate(blockPrefab, dragHandler.transform);
                 
-                singleBlock.transform.localPosition = new Vector3(
+                blockObj.transform.localPosition = new Vector3(
                     shape.offset.x * blockDistance,
                     0f,
                     shape.offset.y * blockDistance
@@ -196,34 +163,27 @@ public partial class BoardController
                          y > 1 ? localColCenter.z + blockDistance * (y - 1)/ 2 : 0);
                     collider.size = new Vector3(x * (blockDistance - 0.04f), 0.4f, y * (blockDistance - 0.04f));
                 }*/
-                var renderer = singleBlock.GetComponentInChildren<SkinnedMeshRenderer>();
-                if (renderer != null && pbData.colorType >= 0)
-                {
-                    renderer.material = testBlockMaterials[(int)pbData.colorType];
-                }
+                if (blockObj.renderer != null && pbData.colorType >= 0)
+                    blockObj.renderer.material = testBlockMaterials[(int)pbData.colorType];
 
-                if (singleBlock.TryGetComponent(out BlockObject blockObj))
-                {
-                    blockObj.colorType = pbData.colorType;
-                    blockObj.x = pbData.center.x + shape.offset.x;
-                    blockObj.y = pbData.center.y + shape.offset.y;
-                    blockObj.offsetToCenter = new Vector2(shape.offset.x, shape.offset.y);
-                    
-                    if (dragHandler != null)
-                        dragHandler.blocks.Add(blockObj);
-                    boardBlockDic[((int)blockObj.x, (int)blockObj.y)].playingBlock = blockObj;
-                    blockObj.preBoardBlockObject = boardBlockDic[((int)blockObj.x, (int)blockObj.y)];
-                    if(minX > blockObj.x) minX = (int)blockObj.x;
-                    if(minY > blockObj.y) minY = (int)blockObj.y;
-                    if(maxX < blockObj.x) maxX = (int)blockObj.x;
-                    if(maxY < blockObj.y) maxY = (int)blockObj.y;
-                }
+                if (dragHandler != null)
+                    dragHandler.blocks.Add(blockObj);
+                
+                var boardBlockObject = boardBlockDic[((int)blockObj.x, (int)blockObj.y)];
+                blockObj.Init(pbData, shape, boardBlockObject);
+                boardBlockDic[((int)blockObj.x, (int)blockObj.y)].playingBlock = blockObj;
+                
+                if (minX > blockObj.x) minX = (int)blockObj.x;
+                if (minY > blockObj.y) minY = (int)blockObj.y;
+                if (maxX < blockObj.x) maxX = (int)blockObj.x;
+                if (maxY < blockObj.y) maxY = (int)blockObj.y;
             }
             dragHandler.horizon = maxX - minX + 1;
             dragHandler.vertical = maxY - minY + 1;
         }
         await Task.Yield();
      }
+
     private async Task CreateCustomWalls(int stageIdx)
     {
         if (stageIdx < 0 || stageIdx >= stageDatas.Length || stageDatas[stageIdx].Walls == null)
@@ -239,7 +199,6 @@ public partial class BoardController
         
         foreach (var wallData in stageDatas[stageIdx].Walls)
         {
-            Quaternion rotation;
 
             // 기본 위치 계산
             var position = new Vector3(
@@ -247,103 +206,18 @@ public partial class BoardController
                 0f, 
                 wallData.y * blockDistance);
             
-            DestroyWallDirection destroyDirection = DestroyWallDirection.None;
-            bool shouldAddWallInfo = false;
-
-            // 벽 방향과 유형에 따라 위치와 회전 조정
-            switch (wallData.WallDirection)
-            {
-                case ObjectPropertiesEnum.WallDirection.Single_Up:
-                    position.z += 0.5f;
-                    rotation = Quaternion.Euler(0f, 180f, 0f);
-                    shouldAddWallInfo = true;
-                    destroyDirection = DestroyWallDirection.Up;
-                    break;
-                    
-                case ObjectPropertiesEnum.WallDirection.Single_Down:
-                    position.z -= 0.5f;
-                    rotation = Quaternion.identity;
-                    shouldAddWallInfo = true;
-                    destroyDirection = DestroyWallDirection.Down;
-                    break;
-                    
-                case ObjectPropertiesEnum.WallDirection.Single_Left:
-                    position.x -= 0.5f;
-                    rotation = Quaternion.Euler(0f, 90f, 0f);
-                    shouldAddWallInfo = true;
-                    destroyDirection = DestroyWallDirection.Left;
-                    break;
-                    
-                case ObjectPropertiesEnum.WallDirection.Single_Right:
-                    position.x += 0.5f;
-                    rotation = Quaternion.Euler(0f, -90f, 0f);
-                    shouldAddWallInfo = true;
-                    destroyDirection = DestroyWallDirection.Right;
-                    break;
-                    
-                case ObjectPropertiesEnum.WallDirection.Left_Up:
-                    // 왼쪽 위 모서리
-                    position.x -= 0.5f;
-                    position.z += 0.5f;
-                    rotation = Quaternion.Euler(0f, 180f, 0f);
-                    break;
-                    
-                case ObjectPropertiesEnum.WallDirection.Left_Down:
-                    // 왼쪽 아래 모서리
-                    position.x -= 0.5f;
-                    position.z -= 0.5f;
-                    rotation = Quaternion.identity;
-                    break;
-                    
-                case ObjectPropertiesEnum.WallDirection.Right_Up:
-                    // 오른쪽 위 모서리
-                    position.x += 0.5f;
-                    position.z += 0.5f;
-                    rotation = Quaternion.Euler(0f, 270f, 0f);
-                    break;
-                    
-                case ObjectPropertiesEnum.WallDirection.Right_Down:
-                    // 오른쪽 아래 모서리
-                    position.x += 0.5f;
-                    position.z -= 0.5f;
-                    rotation = Quaternion.Euler(0f, 0f, 0f);
-                    break;
-                    
-                case ObjectPropertiesEnum.WallDirection.Open_Up:
-                    // 위쪽이 열린 벽
-                    position.z += 0.5f;
-                    rotation = Quaternion.Euler(0f, 180f, 0f);
-                    break;
-                    
-                case ObjectPropertiesEnum.WallDirection.Open_Down:
-                    // 아래쪽이 열린 벽
-                    position.z -= 0.5f;
-                    rotation = Quaternion.identity;
-                    break;
-                    
-                case ObjectPropertiesEnum.WallDirection.Open_Left:
-                    // 왼쪽이 열린 벽
-                    position.x -= 0.5f;
-                    rotation = Quaternion.Euler(0f, 90f, 0f);
-                    break;
-                    
-                case ObjectPropertiesEnum.WallDirection.Open_Right:
-                    // 오른쪽이 열린 벽
-                    position.x += 0.5f;
-                    rotation = Quaternion.Euler(0f, -90f, 0f);
-                    break;
-                    
-                default:
-                    Debug.LogError($"지원되지 않는 벽 방향: {wallData.WallDirection}");
-                    continue;
-            }
+            position += WallTransformData.wallTransformTable[wallData.WallDirection].posOffset;
+            Quaternion rotation = WallTransformData.wallTransformTable[wallData.WallDirection].rotation;
+            bool addInfo = WallTransformData.wallTransformTable[wallData.WallDirection].addInfo;
+            DestroyWallDirection destroyDir = WallTransformData.wallTransformTable[wallData.WallDirection].destroyDir;
+           
             
-            if (shouldAddWallInfo && wallData.wallColor != ColorType.None)
+            if (addInfo && wallData.wallColor != ColorType.None)
             {
                 var pos = (wallData.x, wallData.y);
-                var wallInfo = (destroyDirection, wallData.wallColor);
+                var wallInfo = (destroyDirection: destroyDir, wallData.wallColor);
     
-                if (!wallCoorInfoDic.ContainsKey(pos))
+                if (false == wallCoorInfoDic.ContainsKey(pos))
                 {
                     Dictionary<(DestroyWallDirection, ColorType), int> wallInfoDic = 
                         new Dictionary<(DestroyWallDirection, ColorType), int> { { wallInfo, wallData.length } };
@@ -382,12 +256,11 @@ public partial class BoardController
             // prefabIndex는 length-1 (벽 프리팹 배열의 인덱스)
             if (wallData.length - 1 >= 0 && wallData.length - 1 < wallPrefabs.Length)
             {
-                GameObject wallObj = Instantiate(wallPrefabs[wallData.length - 1], wallsParent.transform);
+                WallObject wallObj = Instantiate(wallPrefabs[wallData.length - 1], wallsParent.transform);
                 wallObj.transform.position = position;
                 wallObj.transform.rotation = rotation;
-                WallObject wall = wallObj.GetComponent<WallObject>();
-                wall.SetWall(wallMaterials[(int)wallData.wallColor], wallData.wallColor != ColorType.None);
-                walls.Add(wallObj);
+                wallObj.SetWall(wallMaterials[(int)wallData.wallColor], wallData.wallColor != ColorType.None);
+                walls.Add(wallObj.gameObject);
             }
             else
             {

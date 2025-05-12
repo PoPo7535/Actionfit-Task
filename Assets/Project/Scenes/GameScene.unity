@@ -628,11 +628,11 @@ MonoBehaviour:
   - {fileID: 11400000, guid: e828b18c6036540ce96e1de8bce974ed, type: 2}
   - {fileID: 11400000, guid: 3f024953c036d4b54a8e4216eb5f2635, type: 2}
   - {fileID: 11400000, guid: 00e70209a1432476dbbbd3505c80108a, type: 2}
-  boardBlockPrefab: {fileID: 4388471490772335809, guid: 02ecc11afb8d5455ca8cd64d0e706e52,
+  boardBlockPrefab: {fileID: 134162084389874977, guid: 02ecc11afb8d5455ca8cd64d0e706e52,
     type: 3}
-  blockGroupPrefab: {fileID: 4246495902434896490, guid: 213c0d67944d44e89822c258b3000264,
+  blockGroupPrefab: {fileID: 6816179124922188393, guid: 213c0d67944d44e89822c258b3000264,
     type: 3}
-  blockPrefab: {fileID: 3816581106366051946, guid: f663cb86b09084a0d98668b5483cc849,
+  blockPrefab: {fileID: 4458697015707937746, guid: f663cb86b09084a0d98668b5483cc849,
     type: 3}
   blockMaterials:
   - {fileID: 2100000, guid: c80dd3717919b304f94b1178afb19b9f, type: 2}

@@ -397,6 +397,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dragHandler: {fileID: 0}
+  renderer: {fileID: 4022617413849543707}
   colorType: 0
   x: 0
   y: 0

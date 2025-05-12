@@ -12,11 +12,11 @@ public partial class BoardController : MonoBehaviour
     [SerializeField] private StageData[] stageDatas;
 
     [SerializeField] private BoardBlockObject boardBlockPrefab;
-    [SerializeField] private GameObject blockGroupPrefab; 
-    [SerializeField] private GameObject blockPrefab;
+    [SerializeField] private BlockDragHandler blockGroupPrefab; 
+    [SerializeField] private BlockObject blockPrefab;
     [SerializeField] private Material[] blockMaterials;
     [SerializeField] private Material[] testBlockMaterials;
-    [SerializeField] private GameObject[] wallPrefabs;
+    [SerializeField] private WallObject[] wallPrefabs;
     [SerializeField] private Material[] wallMaterials;
     [SerializeField] private Transform spawnerTr;
     [SerializeField] private Transform quadTr;

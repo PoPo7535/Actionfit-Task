@@ -15,7 +15,7 @@ public partial class BoardController
         // 보드 블록 생성
         foreach (var data in stageDatas[stageIdx].boardBlocks)
         {
-            var blockObj = Instantiate(boardBlockPrefab, boardParent.transform);
+            var blockObj = ObjectPoolManager.Instance.GetObject(boardBlockPrefab, boardParent.transform);
             blockObj.Init(data);
 
             var key = (blockObj.x, blockObj.y);
@@ -115,7 +115,7 @@ public partial class BoardController
         playingBlockParent = new GameObject("PlayingBlockParent");
         foreach (var pbData in stageDatas[stageIdx].playingBlocks)
         {
-            BlockDragHandler dragHandler = Instantiate(blockGroupPrefab, playingBlockParent.transform);
+            BlockDragHandler dragHandler = ObjectPoolManager.Instance.GetObject(blockGroupPrefab, playingBlockParent.transform);
             dragHandler.transform.position = new Vector3(
                 pbData.center.x * blockDistance, 
                 0.33f, 
@@ -139,7 +139,7 @@ public partial class BoardController
             int minY = boardHeight;
             foreach (var shape in pbData.shapes)
             {
-                BlockObject blockObj = Instantiate(blockPrefab, dragHandler.transform);
+                BlockObject blockObj = ObjectPoolManager.Instance.GetObject(blockPrefab, dragHandler.transform);
                 
                 blockObj.transform.localPosition = new Vector3(
                     shape.offset.x * blockDistance,

@@ -119,7 +119,7 @@ public class BoardBlockObject : MonoBehaviour
             
             //TODO : Move to Other Class & Adjust Direction / Position
 
-            ParticleSetuper setuper = ObjectPoolManager.Instance.GetObject(BoardController.Instance.destroyParticlePrefab,
+            ParticleSetuper setuper = ObjectPoolManager.Instance.GetObject(BoardController.Instance.destroyParticle,
                 transform.position, rotation);
             setuper.transform.position = centerPos;
             setuper.transform.localScale = new Vector3(blockLength * 0.4f, 0.5f, blockLength * 0.4f);

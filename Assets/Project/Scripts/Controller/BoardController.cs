@@ -18,9 +18,8 @@ public partial class BoardController : MonoBehaviour
     [SerializeField] private Material[] wallMaterials;
     [SerializeField] private Transform spawnerTr;
     [SerializeField] private Transform quadTr;
-    [SerializeField] ParticleSetuper destroyParticle;
+    [SerializeField] public ParticleSetuper destroyParticle;
 
-    public ParticleSetuper destroyParticlePrefab => destroyParticle;
     public ParticleSystemRenderer[] psr;
     public List<SequentialCubeParticleSpawner> particleSpawners;
     public List<GameObject> walls = new();

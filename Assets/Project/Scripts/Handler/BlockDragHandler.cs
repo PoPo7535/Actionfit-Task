@@ -309,8 +309,9 @@ public class BlockDragHandler : MonoBehaviour
             .OnComplete(() =>
             {
                 ObjectPoolManager.Instance.Release(particle);
-                Destroy(gameObject);
-                //block.GetComponent<BlockShatter>().Shatter();
+                ObjectPoolManager.Instance.Release(this);
+                foreach (var obj in blocks)
+                    ObjectPoolManager.Instance.Release(obj);
             });
     }
 

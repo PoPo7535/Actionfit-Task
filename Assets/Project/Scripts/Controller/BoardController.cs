@@ -1,7 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Watermelon.JellyMerge;
 
 public partial class BoardController : MonoBehaviour 
@@ -24,6 +26,7 @@ public partial class BoardController : MonoBehaviour
     public ParticleSystemRenderer[] psr;
     public List<SequentialCubeParticleSpawner> particleSpawners;
     public List<GameObject> walls = new();
+    public List<BlockDragHandler> dragHandlers = new();
 
     private Dictionary<int, List<BoardBlockObject>> CheckBlockGroupDic { get; set; }
     private Dictionary<(int x, int y), BoardBlockObject> boardBlockDic;
@@ -32,6 +35,7 @@ public partial class BoardController : MonoBehaviour
 
     private GameObject boardParent;
     private GameObject playingBlockParent;
+    [HideInInspector] public bool PlayMode = true;
     public int boardWidth;
     public int boardHeight;
 
@@ -44,66 +48,61 @@ public partial class BoardController : MonoBehaviour
         Application.targetFrameRate = 60;
     }
 
-    private void Start()
-    {
-        Init();
-    }
-
-    public void OnGUI()
-    {
-        if (GUI.Button(new Rect(50,50,100,50), nameof(GotoNextLevel)))
-        {
-            GotoNextLevel();
-        }
-        
-        if (GUI.Button(new Rect(50,150,100,50), nameof(GoToPreviousLevel)))
-        {
-            GoToPreviousLevel();
-        }
-    }
-
-    private async void Init(int stageIdx = 0)
+    public async void LoadStage(int stageIdx = 0)
     {
         if (stageDatas == null)
         {
             Debug.LogError("StageData가 할당되지 않았습니다!");
             return;
         }
+        if (stageIdx < 0 || stageIdx >= stageDatas.Length || stageDatas[stageIdx].Walls == null)
+        {
+            Debug.LogError($"유효하지 않은 스테이지 인덱스이거나 벽 데이터가 없습니다: {stageIdx}");
+            return;
+        }
+        await LoadStage(stageDatas[stageIdx]);
+    }
 
+    public async Task LoadStage(StageData data)
+    {
+        if (null != boardParent)
+        {
+            Destroy(boardParent);
+            Destroy(playingBlockParent.gameObject);
+        }
+        
         if (boardBlockDic != null)
         {
             foreach (var blockObj in boardBlockDic.Values)
                 ObjectPoolManager.Instance.Release(blockObj);
 
             foreach (var list in CheckBlockGroupDic.Values)
-                foreach (var blockObj in list)
-                    ObjectPoolManager.Instance.Release(blockObj);
+            foreach (var blockObj in list)
+                ObjectPoolManager.Instance.Release(blockObj);
         }
-        Debug.Log("Init");
-        boardBlockDic = new Dictionary<(int x, int y), BoardBlockObject>();
-        CheckBlockGroupDic = new Dictionary<int, List<BoardBlockObject>>();
-        standardBlockDic = new Dictionary<(int, bool), BoardBlockObject>();
-        
+        boardBlockDic.Clear();
+        CheckBlockGroupDic.Clear();
+        standardBlockDic.Clear();
+        walls.Clear();
+        dragHandlers.Clear();
         boardParent = new GameObject("BoardParent");
         boardParent.transform.SetParent(transform);
         
-        await CreateCustomWalls(stageIdx);
+        await CreateCustomWalls(data);
         
-        await CreateBoardAsync(stageIdx);
+        await CreateBoardAsync(data);
 
-        await CreatePlayingBlocksAsync(stageIdx);
+        await CreatePlayingBlocksAsync(data);
 
         CreateMaskingTemp();
     }
-
 
     public void GoToPreviousLevel()
     {
         if (nowStageIndex == 0) return;
 
-        Destroy(boardParent);
-        Destroy(playingBlockParent.gameObject);
-        Init(--nowStageIndex);
+
+        LoadStage(--nowStageIndex);
         
         StartCoroutine(Wait());
     }
@@ -114,7 +113,7 @@ public partial class BoardController : MonoBehaviour
         
         Destroy(boardParent);
         Destroy(playingBlockParent.gameObject);
-        Init(++nowStageIndex);
+        LoadStage(++nowStageIndex);
         
         StartCoroutine(Wait());
     }

@@ -1,10 +1,13 @@
 
+using System;
 using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.Serialization;
 using Watermelon.JellyMerge;
 
-public class BlockDragHandler : MonoBehaviour
+public partial class BlockDragHandler : MonoBehaviour
 {
     public int horizon = 1;
     public int vertical = 1;
@@ -12,7 +15,7 @@ public class BlockDragHandler : MonoBehaviour
     public List<ObjectPropertiesEnum.BlockGimmickType> gimmickType;
     public List<BlockObject> blocks = new List<BlockObject>();
     public List<Vector2> blockOffsets = new List<Vector2>();
-    public bool Enabled = true;
+    [FormerlySerializedAs("Enabled")] public bool PlayMode = true;
     
     private Vector2 centerPos;
     private Camera mainCamera;
@@ -50,37 +53,6 @@ public class BlockDragHandler : MonoBehaviour
         outline.enabled = false;
     }
 
-    void OnMouseDown()
-    {
-        if (!Enabled) return;
-        
-        isDragging = true;
-        rb.isKinematic = false;
-        outline.enabled = true;
-        
-        // 카메라와의 z축 거리 계산
-        zDistanceToCamera = Vector3.Distance(transform.position, mainCamera.transform.position);
-        
-        // 마우스와 오브젝트 간의 오프셋 저장
-        offset = transform.position - GetMouseWorldPosition();
-        
-        // 충돌 상태 초기화
-        ResetCollisionState();
-    }
-
-    void OnMouseUp()
-    {
-        isDragging = false;
-        outline.enabled = false;
-        if (!rb.isKinematic)
-        {
-            rb.linearVelocity = Vector3.zero;
-            rb.isKinematic = true;
-        }
-        SetBlockPosition();
-        ResetCollisionState();
-    }
-
     void Update()
     {
         // 충돌 상태 자동 해제 검사
@@ -93,7 +65,7 @@ public class BlockDragHandler : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (!Enabled || !isDragging) return;
+        if (!PlayMode || !isDragging) return;
         
         SetBlockPosition(false);
         
@@ -117,28 +89,16 @@ public class BlockDragHandler : MonoBehaviour
         {
             // 충돌면에 대해 속도 투영 (실제 이동)
             Vector3 projectedMove = Vector3.ProjectOnPlane(moveVector, lastCollisionNormal);
-            
             velocity = projectedMove * moveSpeed;
         }
         else
-        {
             velocity = moveVector * followSpeed;
-        }
     
         // 속도 제한
         if (velocity.magnitude > maxSpeed)
-        {
             velocity = velocity.normalized * maxSpeed;
-        }
         
         if(!rb.isKinematic) rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, velocity, Time.fixedDeltaTime * 10f);
-    }
-    
-    private Vector3 GetMouseWorldPosition()
-    {
-        Vector3 mouseScreenPosition = Input.mousePosition;
-        mouseScreenPosition.z = zDistanceToCamera;
-        return mainCamera.ScreenToWorldPoint(mouseScreenPosition);
     }
     
     private void SetBlockPosition(bool mouseUp = true)
@@ -321,4 +281,6 @@ public class BlockDragHandler : MonoBehaviour
         Release();
         transform.DOKill(true);
     }
+
+
 }

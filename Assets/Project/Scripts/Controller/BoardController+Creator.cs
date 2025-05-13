@@ -7,13 +7,12 @@ using UnityEngine;
 
 public partial class BoardController
 {
-    private async Task CreateBoardAsync(int stageIdx = 0)
+    private async Task CreateBoardAsync(StageData stageData)
     {
-        nowStageIndex = stageIdx;
         int standardBlockIndex = -1;
         
         // 보드 블록 생성
-        foreach (var data in stageDatas[stageIdx].boardBlocks)
+        foreach (var data in stageData.boardBlocks)
         {
             var blockObj = ObjectPoolManager.Instance.GetObject(boardBlockPrefab, boardParent.transform);
             blockObj.Init(data);
@@ -93,7 +92,6 @@ public partial class BoardController
                     int grpIdx = block.checkGroupIdx[j];
                     CheckBlockGroupDic[grpIdx].Add(boardBlock);
                     boardBlock.checkGroupIdx.Add(grpIdx);
-                    Debug.Log(grpIdx);
                 }
                 else
                 {
@@ -101,7 +99,6 @@ public partial class BoardController
                     CheckBlockGroupDic.Add(checkBlockIndex, new List<BoardBlockObject>());
                     CheckBlockGroupDic[checkBlockIndex].Add(boardBlock);
                     boardBlock.checkGroupIdx.Add(checkBlockIndex);
-                    Debug.Log(checkBlockIndex);
                 }
             }
         }
@@ -110,12 +107,14 @@ public partial class BoardController
         boardWidth = boardBlockDic.Keys.Max(k => k.x);
         boardHeight = boardBlockDic.Keys.Max(k => k.y);
     }
-    private async Task CreatePlayingBlocksAsync(int stageIdx = 0) 
+    private async Task CreatePlayingBlocksAsync(StageData stageData) 
     {
         playingBlockParent = new GameObject("PlayingBlockParent");
-        foreach (var pbData in stageDatas[stageIdx].playingBlocks)
+        foreach (var pbData in stageData.playingBlocks)
         {
             BlockDragHandler dragHandler = Instantiate(blockGroupPrefab, playingBlockParent.transform);
+            dragHandlers.Add(dragHandler);
+            dragHandler.PlayMode = PlayMode;
             dragHandler.transform.position = new Vector3(
                 pbData.center.x * blockDistance, 
                 0.33f, 
@@ -184,20 +183,14 @@ public partial class BoardController
         await Task.Yield();
      }
 
-    private async Task CreateCustomWalls(int stageIdx)
+    private async Task CreateCustomWalls(StageData stageData)
     {
-        if (stageIdx < 0 || stageIdx >= stageDatas.Length || stageDatas[stageIdx].Walls == null)
-        {
-            Debug.LogError($"유효하지 않은 스테이지 인덱스이거나 벽 데이터가 없습니다: {stageIdx}");
-            return;
-        }
-
         GameObject wallsParent = new GameObject("CustomWallsParent");
         
         wallsParent.transform.SetParent(boardParent.transform);
         wallCoorInfoDic = new Dictionary<(int x, int y), Dictionary<(DestroyWallDirection, ColorType), int>>();
         
-        foreach (var wallData in stageDatas[stageIdx].Walls)
+        foreach (var wallData in stageData.Walls)
         {
 
             // 기본 위치 계산

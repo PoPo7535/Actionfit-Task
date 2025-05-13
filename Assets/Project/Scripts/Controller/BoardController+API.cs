@@ -44,86 +44,49 @@ public partial class BoardController
 
         int matchingIndex = boardBlock.colorType.FindIndex(color => color == block.colorType);
         bool hor = boardBlock.isHorizon[matchingIndex];   
+        
+        
+        
         //Horizon
+
+        int min = hor ? boardWidth : boardHeight;
+        int max = -1;
+        
+        
         if (hor)
         {
-            int minX = boardWidth;
-            int maxX = -1;
             foreach (var coordinate in horizonBoardBlocks)
             {
-                if (coordinate.x < minX) minX = (int)coordinate.x;
-                if (coordinate.x > maxX) maxX = (int)coordinate.x;
+                if (coordinate.x < min) min = coordinate.x;
+                if (coordinate.x > max) max = coordinate.x;
             }
 
             // 개별 좌표가 나갔는지 여부를 판단.
-            if (pBlockminX < minX - blockDistance / 2 || pBlockmaxX > maxX + blockDistance / 2)
-            {
+            if (pBlockminX < min - blockDistance / 2 || pBlockmaxX > max + blockDistance / 2)
                 return false;
-            }
 
-            (int, int)[] blockCheckCoors = new (int, int)[horizonBoardBlocks.Count];
-
+            (int, int)[] checkCoors = new (int, int)[horizonBoardBlocks.Count];
+            
             for (int i = 0; i < horizonBoardBlocks.Count; i++)
             {
-                if (horizonBoardBlocks[i].y <= boardHeight / 2)
+                var coord = horizonBoardBlocks[i];
+                int x = coord.x;
+                int y = coord.y;
+
+                bool check = y <= boardHeight / 2;
+                if (check)
                 {
-                    int maxY = -1;
+                    int extreme = GetExtreme(block, hor, check, y);
+                    checkCoors[i] = (x, extreme);
 
-                    for (int k = 0; k < block.dragHandler.blocks.Count; k++)
+                    int start = Mathf.Min(y, extreme);
+                    int end = Mathf.Max(y, extreme);
+                    for (int l = start; l <= end; l++)
                     {
-                        var currentBlock = block.dragHandler.blocks[k];
-
-                        if (Mathf.Approximately(currentBlock.y, horizonBoardBlocks[i].y))
-                        {
-                            if (currentBlock.y > maxY)
-                            {
-                                maxY = (int)currentBlock.y;
-                            }
-                        }
-                    }
-
-                    blockCheckCoors[i] = ((int)horizonBoardBlocks[i].x, maxY);
-
-                    for (int l = blockCheckCoors[i].Item2; l <= horizonBoardBlocks[i].y; l++)
-                    {
-                        if (blockCheckCoors[i].Item1 < pBlockminX || blockCheckCoors[i].Item1 > pBlockmaxX)
+                        if (x < pBlockminX || x > pBlockmaxX)
                             continue;
 
-                        (int, int) key = (blockCheckCoors[i].Item1, l);
-
-                        if (boardBlockDic.ContainsKey(key) &&
-                            boardBlockDic[key].playingBlock != null &&
-                            boardBlockDic[key].playingBlock.colorType != boardBlock.horizonColorType)
-                        {
-                            return false;
-                        }
-                    }
-                }
-                // up to downside
-                else
-                {
-                    int minY = 100;
-
-                    for (int k = 0; k < block.dragHandler.blocks.Count; k++)
-                    {
-                        var currentBlock = block.dragHandler.blocks[k];
-
-                        if (Mathf.Approximately(currentBlock.y, horizonBoardBlocks[i].y))
-                        {
-                            if (currentBlock.y < minY)
-                            {
-                                minY = (int)currentBlock.y;
-                            }
-                        }
-                    }
-
-                    blockCheckCoors[i] = ((int)horizonBoardBlocks[i].x, minY);
-
-                    for (int l = blockCheckCoors[i].Item2; l >= horizonBoardBlocks[i].y; l--)
-                    {
-                        if (blockCheckCoors[i].Item1 < pBlockminX || blockCheckCoors[i].Item1 > pBlockmaxX)
-                            continue;
-                        (int, int) key = (blockCheckCoors[i].Item1, l);
+                        (int, int) key = (checkCoors[i].Item1, l);
 
                         if (boardBlockDic.ContainsKey(key) &&
                             boardBlockDic[key].playingBlock != null &&
@@ -134,99 +97,46 @@ public partial class BoardController
                     }
                 }
             }
-
             return true;
         }
-
-        // Vertical
         else
         {
-            int minY = boardHeight;
-            int maxY = -1;
-
             foreach (var coordinate in verticalBoardBlocks)
             {
-                if (coordinate.y < minY) minY = (int)coordinate.y;
-                if (coordinate.y > maxY) maxY = (int)coordinate.y;
+                if (coordinate.y < min) min = coordinate.y;
+                if (coordinate.y > max) max = coordinate.y;
             }
-
-            if (pBlockminY < minY - blockDistance / 2 || pBlockmaxY > maxY + blockDistance / 2)
-            {
+            
+            if (pBlockminY < min - blockDistance / 2 || pBlockmaxY > max + blockDistance / 2)
                 return false;
-            }
 
-            (int, int)[] blockCheckCoors = new (int, int)[verticalBoardBlocks.Count];
+            (int, int)[] checkCoors = new (int, int)[verticalBoardBlocks.Count];
 
             for (int i = 0; i < verticalBoardBlocks.Count; i++)
             {
-                //x exist in left
-                if (verticalBoardBlocks[i].x <= boardWidth / 2)
+                var coord = verticalBoardBlocks[i];
+                int x = coord.x;
+                int y = coord.y;
+
+                bool check = x <= boardWidth / 2;
+
+                int extreme = GetExtreme(block, hor, check, y);
+                checkCoors[i] = (extreme, y);
+
+                int start = Mathf.Min(x, extreme);
+                int end = Mathf.Max(x, extreme);
+
+                for (int l = start; l <= end; l++)
                 {
-                    int maxX = int.MinValue;
+                    if (y < pBlockminY || y > pBlockmaxY)
+                        continue;
+                    (int, int) key = (l, y);
 
-                    for (int k = 0; k < block.dragHandler.blocks.Count; k++)
+                    if (boardBlockDic.ContainsKey(key) &&
+                        boardBlockDic[key].playingBlock != null &&
+                        boardBlockDic[key].playingBlock.colorType != boardBlock.verticalColorType)
                     {
-                        var currentBlock = block.dragHandler.blocks[k];
-
-                        if (currentBlock.y == verticalBoardBlocks[i].y)
-                        {
-                            if (currentBlock.x > maxX)
-                            {
-                                maxX = (int)currentBlock.x;
-                            }
-                        }
-                    }
-
-                    // 튜플에 y와 maxX를 저장
-                    blockCheckCoors[i] = (maxX, (int)verticalBoardBlocks[i].y);
-
-                    for (int l = blockCheckCoors[i].Item1; l >= verticalBoardBlocks[i].x; l--)
-                    {
-                        if (blockCheckCoors[i].Item2 < pBlockminY || blockCheckCoors[i].Item2 > pBlockmaxY)
-                            continue;
-                        (int, int) key = (l, blockCheckCoors[i].Item2);
-
-                        if (boardBlockDic.ContainsKey(key) &&
-                            boardBlockDic[key].playingBlock != null &&
-                            boardBlockDic[key].playingBlock.colorType != boardBlock.verticalColorType)
-                        {
-                            return false;
-                        }
-                    }
-                }
-                //x exist in right
-                else
-                {
-                    int minX = 100;
-
-                    for (int k = 0; k < block.dragHandler.blocks.Count; k++)
-                    {
-                        var currentBlock = block.dragHandler.blocks[k];
-
-                        if (currentBlock.y == verticalBoardBlocks[i].y)
-                        {
-                            if (currentBlock.x < minX)
-                            {
-                                minX = (int)currentBlock.x;
-                            }
-                        }
-                    }
-
-                    // 튜플에 y와 minX를 저장
-                    blockCheckCoors[i] = (minX, (int)verticalBoardBlocks[i].y);
-
-                    for (int l = blockCheckCoors[i].Item1; l <= verticalBoardBlocks[i].x; l++)
-                    {
-                        if (blockCheckCoors[i].Item2 < pBlockminY || blockCheckCoors[i].Item2 > pBlockmaxY)
-                            continue;
-                        (int, int) key = (l, blockCheckCoors[i].Item2);
-
-                        if (boardBlockDic.ContainsKey(key) &&
-                            boardBlockDic[key].playingBlock != null &&
-                            boardBlockDic[key].playingBlock.colorType != boardBlock.verticalColorType)
-                        {
-                            return false;
-                        }
+                        return false;
                     }
                 }
             }
@@ -234,6 +144,47 @@ public partial class BoardController
         return true;
     }
 
+    
+    int GetExtreme(BlockObject block, bool isHor, bool findMax, float target)
+    {
+        int findValue = findMax ? int.MinValue : int.MaxValue;
+        
+        foreach (var curBlock in block.dragHandler.blocks)
+        {
+            int x = (int)curBlock.x;
+            int y = (int)curBlock.y;
+            if (false == Mathf.Approximately(y, target)) 
+                continue;
+            if (findMax)
+            {
+                if (isHor)
+                {
+                    if (y > findValue)
+                        findValue = y;
+                }
+                else
+                {
+                    if (x > findValue)
+                        findValue = x;
+                }
+            }
+            else
+            {
+                if (isHor)
+                {
+                    if (y < findValue)
+                        findValue = y;
+                }
+                else
+                {
+                    if (x < findValue)
+                        findValue = x;
+                }
+            }
+        }
+        return findValue;
+    }
+    
     public Material GetTargetMaterial(int index)
     {
         return wallMaterials[index];

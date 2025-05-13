@@ -1,12 +1,8 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.Serialization;
 
-public partial class BoardController : MonoBehaviour
+public partial class BoardController : MonoBehaviour 
 {
     public static BoardController Instance;
     
@@ -39,7 +35,6 @@ public partial class BoardController : MonoBehaviour
     public int boardHeight;
 
     public readonly float blockDistance = 0.79f;
-
     private int nowStageIndex = 0;
 
     private void Awake()

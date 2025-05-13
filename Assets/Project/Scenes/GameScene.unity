@@ -624,7 +624,7 @@ MonoBehaviour:
     type: 3}
   stageDatas:
   - {fileID: 11400000, guid: ed3115cbf9b924db1b50fa0673025536, type: 2}
-  - {fileID: 11400000, guid: a03a08af939664777995f970a9621f90, type: 2}
+  - {fileID: 11400000, guid: ed3115cbf9b924db1b50fa0673025536, type: 2}
   - {fileID: 11400000, guid: e828b18c6036540ce96e1de8bce974ed, type: 2}
   - {fileID: 11400000, guid: 3f024953c036d4b54a8e4216eb5f2635, type: 2}
   - {fileID: 11400000, guid: 00e70209a1432476dbbbd3505c80108a, type: 2}

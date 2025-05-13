@@ -29,7 +29,6 @@ public partial class BoardController
                     var dir = kv.Key.Item1;
                     var horizon = dir is DestroyWallDirection.Up or DestroyWallDirection.Down;
                     blockObj.isHorizon.Add(horizon);
-                    
                     standardBlockDic.Add((++standardBlockIndex, horizon), blockObj);
                 }
                 blockObj.isCheckBlock = true;
@@ -40,6 +39,7 @@ public partial class BoardController
             }
 
             boardBlockDic.Add((data.x, data.y), blockObj);
+            
         }
 
         // standardBlockDic에서 관련 위치의 블록들 설정
@@ -72,13 +72,12 @@ public partial class BoardController
         foreach (var blockPos in boardBlockDic.Keys)
         {
             BoardBlockObject boardBlock = boardBlockDic[blockPos];
-            
             for (int j = 0; j < boardBlock.colorType.Count; j++)
             {
                 if (false == (boardBlock.isCheckBlock && boardBlock.colorType[j] != ColorType.None))
                     return;
-                
                 // 이 블록이 이미 그룹에 속해있는지 확인
+                
                 if (false == boardBlock.checkGroupIdx.Count <= j)
                     return;
                 
@@ -94,6 +93,7 @@ public partial class BoardController
                     int grpIdx = block.checkGroupIdx[j];
                     CheckBlockGroupDic[grpIdx].Add(boardBlock);
                     boardBlock.checkGroupIdx.Add(grpIdx);
+                    Debug.Log(grpIdx);
                 }
                 else
                 {
@@ -101,6 +101,7 @@ public partial class BoardController
                     CheckBlockGroupDic.Add(checkBlockIndex, new List<BoardBlockObject>());
                     CheckBlockGroupDic[checkBlockIndex].Add(boardBlock);
                     boardBlock.checkGroupIdx.Add(checkBlockIndex);
+                    Debug.Log(checkBlockIndex);
                 }
             }
         }

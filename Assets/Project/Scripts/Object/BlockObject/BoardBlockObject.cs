@@ -32,6 +32,11 @@ public class BoardBlockObject : MonoBehaviour
         );
         x = data.x;
         y = data.y;
+        checkGroupIdx.Clear();
+        colorType.Clear();
+        isHorizon.Clear();
+        len.Clear();
+        isCheckBlock = false;
     }
     public bool CheckAdjacentBlock(BlockObject block, Vector3 destroyStartPos)
     {

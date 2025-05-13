@@ -79,7 +79,7 @@ public partial class BoardController : MonoBehaviour
                 foreach (var blockObj in list)
                     ObjectPoolManager.Instance.Release(blockObj);
         }
-        
+        Debug.Log("Init");
         boardBlockDic = new Dictionary<(int x, int y), BoardBlockObject>();
         CheckBlockGroupDic = new Dictionary<int, List<BoardBlockObject>>();
         standardBlockDic = new Dictionary<(int, bool), BoardBlockObject>();

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Watermelon.JellyMerge;
 using Vector3 = UnityEngine.Vector3;
 
 public class BoardBlockObject : MonoBehaviour
@@ -114,18 +115,15 @@ public class BoardBlockObject : MonoBehaviour
             }
 
             int blockLength = isHorizon[i] ? block.dragHandler.horizon : block.dragHandler.vertical;
-
-            foreach (var psr in BoardController.Instance.psr)
-                psr.material = BoardController.Instance.GetTargetMaterial((int)block.colorType);
-
+            
             //TODO : Move to Other Class & Adjust Direction / Position
 
-            ParticleSystem particle = Instantiate(BoardController.Instance.destroyParticlePrefab,
+            ParticleSetuper setuper = ObjectPoolManager.Instance.GetObject(BoardController.Instance.destroyParticlePrefab,
                 transform.position, rotation);
-            particle.transform.position = centerPos;
-            particle.transform.localScale = new Vector3(blockLength * 0.4f, 0.5f, blockLength * 0.4f);
-
-            block.dragHandler.DestroyMove(pos, particle);
+            setuper.transform.position = centerPos;
+            setuper.transform.localScale = new Vector3(blockLength * 0.4f, 0.5f, blockLength * 0.4f);
+            setuper.SetColor(block.colorType);
+            block.dragHandler.DestroyMove(pos, setuper);
         }
 
         return true;

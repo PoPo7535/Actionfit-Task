@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Watermelon.JellyMerge;
 
 public partial class BoardController : MonoBehaviour 
 {
@@ -17,9 +18,9 @@ public partial class BoardController : MonoBehaviour
     [SerializeField] private Material[] wallMaterials;
     [SerializeField] private Transform spawnerTr;
     [SerializeField] private Transform quadTr;
-    [SerializeField] ParticleSystem destroyParticle;
+    [SerializeField] ParticleSetuper destroyParticle;
 
-    public ParticleSystem destroyParticlePrefab => destroyParticle;
+    public ParticleSetuper destroyParticlePrefab => destroyParticle;
     public ParticleSystemRenderer[] psr;
     public List<SequentialCubeParticleSpawner> particleSpawners;
     public List<GameObject> walls = new();
@@ -41,7 +42,6 @@ public partial class BoardController : MonoBehaviour
     {
         Instance = this;
         Application.targetFrameRate = 60;
-        psr = destroyParticlePrefab.GetComponentsInChildren<ParticleSystemRenderer>();
     }
 
     private void Start()

@@ -8,18 +8,12 @@ namespace Watermelon.JellyMerge
 {
     public class ParticleSetuper : MonoBehaviour
     {
-        [SerializeField] GameObject[] particleObjects;
+        [SerializeField] private List<ParticleSystemRenderer> renderers;
 
-        private List<ParticleSystemRenderer> renderers;
-
-        private void Awake()
+        public void SetColor(ColorType colorType)
         {
-            renderers = new List<ParticleSystemRenderer>();
-
-            for (int i = 0; i < particleObjects.Length; i++)
-            {
-                renderers.Add(particleObjects[i].GetComponent<ParticleSystemRenderer>());
-            }
+            foreach (var psr in renderers)
+                psr.material = BoardController.Instance.GetTargetMaterial((int)colorType);
         }
 
         public void SetMaterial(Material material)

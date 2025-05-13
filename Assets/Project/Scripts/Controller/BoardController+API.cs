@@ -82,23 +82,12 @@ public partial class BoardController
                         continue;
 
                     (int, int) key = hor ? (checkCoors[i].Item1, l) : (l, y);
-                    if (hor)
+                    if (boardBlockDic.ContainsKey(key) &&
+                        boardBlockDic[key].playingBlock != null &&
+                        boardBlockDic[key].playingBlock.colorType !=
+                        (hor ? boardBlock.horizonColorType : boardBlock.verticalColorType)) 
                     {
-                        if (boardBlockDic.ContainsKey(key) &&
-                            boardBlockDic[key].playingBlock != null &&
-                            boardBlockDic[key].playingBlock.colorType != boardBlock.horizonColorType)
-                        {
-                            return false;
-                        }
-                    }
-                    else
-                    {
-                        if (boardBlockDic.ContainsKey(key) &&
-                            boardBlockDic[key].playingBlock != null &&
-                            boardBlockDic[key].playingBlock.colorType != boardBlock.verticalColorType)
-                        {
-                            return false;
-                        }
+                        return false;
                     }
                 }
             }

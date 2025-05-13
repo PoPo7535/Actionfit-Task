@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
+using Watermelon.JellyMerge;
 
 public class BlockDragHandler : MonoBehaviour
 {
@@ -300,14 +301,14 @@ public class BlockDragHandler : MonoBehaviour
             }
         }
     }
-    public void DestroyMove(Vector3 pos, ParticleSystem particle)
+    public void DestroyMove(Vector3 pos, ParticleSetuper particle)
     {
         ClearPreboardBlockObjects();
         
         transform.DOMove(pos, 1f).SetEase(Ease.Linear)
             .OnComplete(() =>
             {
-                Destroy(particle.gameObject);
+                ObjectPoolManager.Instance.Release(particle);
                 Destroy(gameObject);
                 //block.GetComponent<BlockShatter>().Shatter();
             });

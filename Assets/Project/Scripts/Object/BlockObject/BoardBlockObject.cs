@@ -116,6 +116,7 @@ public class BoardBlockObject : MonoBehaviour
 
             int blockLength = isHorizon[i] ? block.dragHandler.horizon : block.dragHandler.vertical;
             
+            
             //TODO : Move to Other Class & Adjust Direction / Position
 
             ParticleSetuper setuper = ObjectPoolManager.Instance.GetObject(BoardController.Instance.destroyParticlePrefab,

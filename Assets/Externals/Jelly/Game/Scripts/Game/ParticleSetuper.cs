@@ -15,13 +15,5 @@ namespace Watermelon.JellyMerge
             foreach (var psr in renderers)
                 psr.material = BoardController.Instance.GetTargetMaterial((int)colorType);
         }
-
-        public void SetMaterial(Material material)
-        {
-            for (int i = 0; i < renderers.Count; i++)
-            {
-                renderers[i].material = material;
-            }
-        }
     }
 }

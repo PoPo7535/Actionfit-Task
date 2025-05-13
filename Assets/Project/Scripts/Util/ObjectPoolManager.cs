@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 public class ObjectPoolManager : MonoBehaviour
 {
@@ -12,7 +11,7 @@ public class ObjectPoolManager : MonoBehaviour
         Instance = this;
     }
 
-    public T GetObject<T>(T obj, Vector3 transform, Quaternion quaternion) where T : Component
+    public T GetObject<T>(T obj, Vector3 pos, Quaternion quaternion) where T : Component
     {
         var type = obj.GetType();
         if (false == objectPool.ContainsKey(type))
@@ -20,11 +19,14 @@ public class ObjectPoolManager : MonoBehaviour
 
         if (objectPool[type].Count > 0 && false == objectPool[type].Peek().gameObject.activeSelf)
         {
-            objectPool[type].Peek().gameObject.SetActive(true);
-            return objectPool[type].Dequeue() as T;
+            var poolObj = objectPool[type].Dequeue();
+            poolObj.transform.position = pos;
+            poolObj.transform.rotation = quaternion;
+            poolObj.gameObject.SetActive(true);
+            return poolObj as T;
         }
         
-        var newObj = Instantiate(obj, transform, quaternion);
+        var newObj = Instantiate(obj, pos, quaternion);
         objectPool[type].Enqueue(newObj);
 
         return newObj;

@@ -1,22 +1,23 @@
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEditor;
+using UnityEngine.UI;
+using UnityEngine.UIElements;
+using Toggle = UnityEngine.UI.Toggle;
 #if UNITY_EDITOR
 using UnityEngine;
 #endif
 
 public class EditorController : MonoBehaviour
 {
-    private BoardController boardController;
     private List<StageData> stages = new List<StageData>();
-    
-    private GUIStyle bigToggleStyle;
-    private Vector2 scrollerPos;
-    public Vector2 scrollPos;
-    public Vector2 itemSize;
+    public ScrollerItem itemPrefab;
+    public RectTransform content;
+    public Toggle toggle;
+    public StageData curStage;
     void Awake()
     {
-        boardController = GetComponent<BoardController>();
 #if UNITY_EDITOR
         var guids = AssetDatabase.FindAssets("t:StageData", new[] { "Assets/Project/Resource/Data/StageData SO" });
         stages = guids
@@ -26,32 +27,26 @@ public class EditorController : MonoBehaviour
     }
     void Start()
     {
-
-    }
-    
-
-
-
-    public void OnGUI()
-    {
-
-        BoardController.Instance.PlayMode = GUI.Toggle(
-            new Rect(itemSize.x + 50, 50, 100, 100),
-            BoardController.Instance.PlayMode,
-            "플레이모드");
-        
-        scrollerPos = GUI.BeginScrollView(
-            new Rect(scrollPos.x, scrollPos.y, itemSize.x + 9, 3.5f * itemSize.y),
-            scrollerPos,
-            new Rect(0, 0, itemSize.x + 10, stages.Count * itemSize.y));
-
-        // 스크롤 안에 들어갈 내용
         for (int i = 0; i < stages.Count; i++)
+            AddItem(stages[i] );
+        toggle.onValueChanged.AddListener(async isOn =>
         {
-            if (GUI.Button(new Rect(0, i * itemSize.y, itemSize.x, itemSize.y), stages[i].name))
-                boardController.LoadStage(stages[i]);
-        }
+            BoardController.Instance.PlayMode = isOn;
+            if(null != curStage)
+                await BoardController.Instance.LoadStage(curStage);
+        });
+    }
 
-        GUI.EndScrollView();
+
+    private void AddItem(StageData data)
+    {
+        ScrollerItem newItem = Instantiate(itemPrefab, content);
+        newItem.btn.onClick.RemoveAllListeners();
+        newItem.btn.onClick.AddListener(async () =>
+        {
+            curStage = data;
+            await BoardController.Instance.LoadStage(data);
+        });
+        newItem.text.text= data.name;
     }
 }

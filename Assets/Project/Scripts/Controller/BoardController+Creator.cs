@@ -115,6 +115,7 @@ public partial class BoardController
             BlockDragHandler dragHandler = Instantiate(blockGroupPrefab, playingBlockParent.transform);
             dragHandlers.Add(dragHandler);
             dragHandler.PlayMode = PlayMode;
+            Debug.Log(dragHandler.PlayMode);
             dragHandler.transform.position = new Vector3(
                 pbData.center.x * blockDistance, 
                 0.33f, 

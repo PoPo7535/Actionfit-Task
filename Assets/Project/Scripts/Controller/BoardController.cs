@@ -28,8 +28,8 @@ public partial class BoardController : MonoBehaviour
     public List<GameObject> walls = new();
     public List<BlockDragHandler> dragHandlers = new();
 
-    private Dictionary<int, List<BoardBlockObject>> CheckBlockGroupDic { get; set; }
-    private Dictionary<(int x, int y), BoardBlockObject> boardBlockDic;
+    private Dictionary<int, List<BoardBlockObject>> CheckBlockGroupDic { get; set; } = new();
+    private Dictionary<(int x, int y), BoardBlockObject> boardBlockDic = new();
     private Dictionary<(int, bool), BoardBlockObject> standardBlockDic = new();
     private Dictionary<(int x, int y), Dictionary<(DestroyWallDirection, ColorType), int>> wallCoorInfoDic;
 
@@ -70,7 +70,6 @@ public partial class BoardController : MonoBehaviour
             Destroy(boardParent);
             Destroy(playingBlockParent.gameObject);
         }
-        
         if (boardBlockDic != null)
         {
             foreach (var blockObj in boardBlockDic.Values)
@@ -80,6 +79,7 @@ public partial class BoardController : MonoBehaviour
             foreach (var blockObj in list)
                 ObjectPoolManager.Instance.Release(blockObj);
         }
+
         boardBlockDic.Clear();
         CheckBlockGroupDic.Clear();
         standardBlockDic.Clear();
@@ -89,11 +89,10 @@ public partial class BoardController : MonoBehaviour
         boardParent.transform.SetParent(transform);
         
         await CreateCustomWalls(data);
-        
+
         await CreateBoardAsync(data);
 
         await CreatePlayingBlocksAsync(data);
-
         CreateMaskingTemp();
     }
 

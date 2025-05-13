@@ -6,7 +6,7 @@ public partial class BlockDragHandler
     {
         foreach (var handler in BoardController.Instance.dragHandlers)
         {
-            handler.PlayMode = false;
+            handler.PlayMode = PlayMode;
         }
 
         

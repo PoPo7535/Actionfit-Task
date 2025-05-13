@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -48,6 +49,19 @@ public partial class BoardController : MonoBehaviour
         Init();
     }
 
+    public void OnGUI()
+    {
+        if (GUI.Button(new Rect(50,50,100,50), nameof(GotoNextLevel)))
+        {
+            GotoNextLevel();
+        }
+        
+        if (GUI.Button(new Rect(50,150,100,50), nameof(GoToPreviousLevel)))
+        {
+            GoToPreviousLevel();
+        }
+    }
+
     private async void Init(int stageIdx = 0)
     {
         if (stageDatas == null)
@@ -56,9 +70,20 @@ public partial class BoardController : MonoBehaviour
             return;
         }
 
+        if (boardBlockDic != null)
+        {
+            foreach (var blockObj in boardBlockDic.Values)
+                ObjectPoolManager.Instance.Release(blockObj);
+
+            foreach (var list in CheckBlockGroupDic.Values)
+                foreach (var blockObj in list)
+                    ObjectPoolManager.Instance.Release(blockObj);
+        }
+        
         boardBlockDic = new Dictionary<(int x, int y), BoardBlockObject>();
         CheckBlockGroupDic = new Dictionary<int, List<BoardBlockObject>>();
-
+        standardBlockDic = new Dictionary<(int, bool), BoardBlockObject>();
+        
         boardParent = new GameObject("BoardParent");
         boardParent.transform.SetParent(transform);
         

@@ -13,19 +13,18 @@ public class BlockObject : MonoBehaviour
     private Vector3 previousPosition;
     public BoardBlockObject preBoardBlockObject;
 
-    private void Awake()
+    private void OnEnable()
     {
         dragHandler = transform.parent.GetComponent<BlockDragHandler>();
         Col = GetComponentInChildren<Collider>();
     }
 
-    public void Init(PlayingBlockData pbData, ShapeData shape, BoardBlockObject boardBlockObject)
+    public void Init(PlayingBlockData pbData, ShapeData shape)
     {
         colorType = pbData.colorType;
         x = pbData.center.x + shape.offset.x;
         y = pbData.center.y + shape.offset.y;
         offsetToCenter = new Vector2(shape.offset.x, shape.offset.y);
-        preBoardBlockObject = boardBlockObject;
     }
     public void SetCoordinate(Vector2 centerPos)
     {

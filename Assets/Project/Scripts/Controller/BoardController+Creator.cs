@@ -68,7 +68,6 @@ public partial class BoardController
 
         // 3체크 블록 그룹 생성
         int checkBlockIndex = -1;
-        CheckBlockGroupDic = new Dictionary<int, List<BoardBlockObject>>();
 
         foreach (var blockPos in boardBlockDic.Keys)
         {
@@ -115,7 +114,7 @@ public partial class BoardController
         playingBlockParent = new GameObject("PlayingBlockParent");
         foreach (var pbData in stageDatas[stageIdx].playingBlocks)
         {
-            BlockDragHandler dragHandler = ObjectPoolManager.Instance.GetObject(blockGroupPrefab, playingBlockParent.transform);
+            BlockDragHandler dragHandler = Instantiate(blockGroupPrefab, playingBlockParent.transform);
             dragHandler.transform.position = new Vector3(
                 pbData.center.x * blockDistance, 
                 0.33f, 
@@ -168,9 +167,9 @@ public partial class BoardController
 
                 if (dragHandler != null)
                     dragHandler.blocks.Add(blockObj);
-                
-                var boardBlockObject = boardBlockDic[((int)blockObj.x, (int)blockObj.y)];
-                blockObj.Init(pbData, shape, boardBlockObject);
+                blockObj.Init(pbData, shape);
+
+                blockObj.preBoardBlockObject = boardBlockDic[((int)blockObj.x, (int)blockObj.y)];
                 boardBlockDic[((int)blockObj.x, (int)blockObj.y)].playingBlock = blockObj;
                 
                 if (minX > blockObj.x) minX = (int)blockObj.x;

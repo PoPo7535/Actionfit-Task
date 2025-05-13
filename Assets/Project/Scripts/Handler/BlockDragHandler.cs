@@ -228,9 +228,7 @@ public class BlockDragHandler : MonoBehaviour
             
             // 현재 저장된 충돌 normal과 유사한 경우에만 해제
             if (Vector3.Dot(normal, lastCollisionNormal) > 0.8f)
-            {
                 ResetCollisionState();
-            }
         }
     }
 
@@ -249,14 +247,10 @@ public class BlockDragHandler : MonoBehaviour
             float blockX = block.transform.position.x;
         
             if (blockX < minX)
-            {
                 minX = blockX;
-            }
         
             if (blockX > maxX)
-            {
                 maxX = blockX;
-            }
         }
     
         // Calculate the middle value between min and max
@@ -278,14 +272,10 @@ public class BlockDragHandler : MonoBehaviour
             float blockZ = block.transform.position.z;
         
             if (blockZ < minZ)
-            {
                 minZ = blockZ;
-            }
         
             if (blockZ > maxZ)
-            {
                 maxZ = blockZ;
-            }
         }
     
         return new Vector3(transform.position.x, transform.position.y, (minZ + maxZ) / 2f);
@@ -309,10 +299,14 @@ public class BlockDragHandler : MonoBehaviour
             .OnComplete(() =>
             {
                 ObjectPoolManager.Instance.Release(particle);
-                ObjectPoolManager.Instance.Release(this);
-                foreach (var obj in blocks)
-                    ObjectPoolManager.Instance.Release(obj);
+                Release();
             });
+    }
+
+    public void Release()
+    {
+        foreach (var obj in blocks)
+            ObjectPoolManager.Instance.Release(obj);
     }
 
     private void OnDisable()
@@ -322,6 +316,9 @@ public class BlockDragHandler : MonoBehaviour
 
     private void OnDestroy()
     {
+        if(false == Application.isPlaying)
+            return;
+        Release();
         transform.DOKill(true);
     }
 }

@@ -29,7 +29,6 @@ public class ObjectPoolManager : MonoBehaviour
         }
         
         var newObj = Instantiate(obj, pos, rotation);
-        newObj.transform.SetParent(transform, true);
         objectPool[type].Enqueue(newObj);
 
         return newObj;
@@ -44,8 +43,9 @@ public class ObjectPoolManager : MonoBehaviour
         if (objectPool[type].Count > 0 && false == objectPool[type].Peek().gameObject.activeSelf)
         {
             var poolObj = objectPool[type].Dequeue();
-            poolObj.transform.position = tr.position;
-            poolObj.transform.rotation = tr.rotation;
+            // poolObj.transform.position = tr.position;
+            // poolObj.transform.rotation = tr.rotation;
+            poolObj.transform.SetParent(tr);
             poolObj.gameObject.SetActive(true);
             return poolObj as T;
         }
@@ -57,6 +57,8 @@ public class ObjectPoolManager : MonoBehaviour
     
     public void Release<T>(T obj) where T : Component
     {
+        if (false == obj.gameObject.activeSelf)
+            return;
         obj.gameObject.SetActive(false);
         obj.transform.SetParent(transform, true);
         var type = typeof(T);

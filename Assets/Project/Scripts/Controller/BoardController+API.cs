@@ -45,49 +45,45 @@ public partial class BoardController
         int matchingIndex = boardBlock.colorType.FindIndex(color => color == block.colorType);
         bool hor = boardBlock.isHorizon[matchingIndex];   
         
-        
-        
         //Horizon
-
+        List<BoardBlockObject> boardBlocks = hor ? horizonBoardBlocks : verticalBoardBlocks;
         int min = hor ? boardWidth : boardHeight;
         int max = -1;
-        
-        
-        if (hor)
+        int blockMin = hor ? pBlockminX : pBlockminY;
+        int blockMax = hor ? pBlockmaxX : pBlockmaxY;;
+        foreach (var coordinate in boardBlocks)
         {
-            foreach (var coordinate in horizonBoardBlocks)
+            int val = hor ? coordinate.x : coordinate.y;
+            if (val < min) min = val;
+            if (val > max) max = val;
+        }
+        if (blockMin < min - blockDistance / 2 || blockMax > max + blockDistance / 2)
+            return false;
+        (int, int)[] checkCoors = new (int, int)[boardBlocks.Count];
+        for (int i = 0; i < boardBlocks.Count; i++)
+        {
+            var coord = boardBlocks[i];
+            int x = coord.x;
+            int y = coord.y;
+            bool check = (hor ? y : x) <= (hor ? boardHeight / 2 : boardWidth);
+
+                
+            if (check)
             {
-                if (coordinate.x < min) min = coordinate.x;
-                if (coordinate.x > max) max = coordinate.x;
-            }
-
-            // 개별 좌표가 나갔는지 여부를 판단.
-            if (pBlockminX < min - blockDistance / 2 || pBlockmaxX > max + blockDistance / 2)
-                return false;
-
-            (int, int)[] checkCoors = new (int, int)[horizonBoardBlocks.Count];
-            
-            for (int i = 0; i < horizonBoardBlocks.Count; i++)
-            {
-                var coord = horizonBoardBlocks[i];
-                int x = coord.x;
-                int y = coord.y;
-
-                bool check = y <= boardHeight / 2;
-                if (check)
+                int extreme = GetExtreme(block, hor, check, y);
+                checkCoors[i] = hor ? (x, extreme) : (extreme, y);
+                    
+                int start = Mathf.Min(hor ? y : x, extreme);
+                int end = Mathf.Max(hor ? y : x, extreme);
+                    
+                for (int l = start; l <= end; l++)
                 {
-                    int extreme = GetExtreme(block, hor, check, y);
-                    checkCoors[i] = (x, extreme);
+                    if (x < blockMin || x > blockMax)
+                        continue;
 
-                    int start = Mathf.Min(y, extreme);
-                    int end = Mathf.Max(y, extreme);
-                    for (int l = start; l <= end; l++)
+                    (int, int) key = hor ? (checkCoors[i].Item1, l) : (l, y);
+                    if (hor)
                     {
-                        if (x < pBlockminX || x > pBlockmaxX)
-                            continue;
-
-                        (int, int) key = (checkCoors[i].Item1, l);
-
                         if (boardBlockDic.ContainsKey(key) &&
                             boardBlockDic[key].playingBlock != null &&
                             boardBlockDic[key].playingBlock.colorType != boardBlock.horizonColorType)
@@ -95,52 +91,19 @@ public partial class BoardController
                             return false;
                         }
                     }
-                }
-            }
-            return true;
-        }
-        else
-        {
-            foreach (var coordinate in verticalBoardBlocks)
-            {
-                if (coordinate.y < min) min = coordinate.y;
-                if (coordinate.y > max) max = coordinate.y;
-            }
-            
-            if (pBlockminY < min - blockDistance / 2 || pBlockmaxY > max + blockDistance / 2)
-                return false;
-
-            (int, int)[] checkCoors = new (int, int)[verticalBoardBlocks.Count];
-
-            for (int i = 0; i < verticalBoardBlocks.Count; i++)
-            {
-                var coord = verticalBoardBlocks[i];
-                int x = coord.x;
-                int y = coord.y;
-
-                bool check = x <= boardWidth / 2;
-
-                int extreme = GetExtreme(block, hor, check, y);
-                checkCoors[i] = (extreme, y);
-
-                int start = Mathf.Min(x, extreme);
-                int end = Mathf.Max(x, extreme);
-
-                for (int l = start; l <= end; l++)
-                {
-                    if (y < pBlockminY || y > pBlockmaxY)
-                        continue;
-                    (int, int) key = (l, y);
-
-                    if (boardBlockDic.ContainsKey(key) &&
-                        boardBlockDic[key].playingBlock != null &&
-                        boardBlockDic[key].playingBlock.colorType != boardBlock.verticalColorType)
+                    else
                     {
-                        return false;
+                        if (boardBlockDic.ContainsKey(key) &&
+                            boardBlockDic[key].playingBlock != null &&
+                            boardBlockDic[key].playingBlock.colorType != boardBlock.verticalColorType)
+                        {
+                            return false;
+                        }
                     }
                 }
             }
         }
+
         return true;
     }
 
